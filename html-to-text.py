@@ -34,7 +34,6 @@ def htmlFileToText(fname, outputDir, tag, attrib, attribVal):
         html = inf.read()
         parser = MyHTMLParser(outf)
         parser.feed(html)
-        #outF.write(html)
 
 def htmlToText(dir, tag, attrib, attribVal):
     try:
@@ -52,9 +51,6 @@ def htmlToText(dir, tag, attrib, attribVal):
             htmlFileToText(fname, outputDir, tag, attrib, attribVal)
         except WindowsError as e:
             sys.exit(e)
-            
-        break
-
 
 def main():
     try:
