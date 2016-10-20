@@ -3,14 +3,16 @@ from HTMLParser import HTMLParser
 
 class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
-        print "Encountered a start tag:", tag        
-
+        if tag == "div" and [pair for pair in attrs if
+                pair[0] == "class" and pair[1] == "content"]:
+            print "yes"
+                
     def handle_endtag(self, tag):
-        print "Encountered an end tag :", tag
-
+        self.indiv = False
+            
     def handle_data(self, data):
-        print "Encountered some data  :", data
-        
+        pass
+    
     def __init__(self, outf):
         HTMLParser.__init__(self)
         self.outf = outf
