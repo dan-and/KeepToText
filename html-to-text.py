@@ -2,20 +2,31 @@ import sys, glob, os
 from HTMLParser import HTMLParser
 
 class MyHTMLParser(HTMLParser):
+    def class_content(self, tag, attrs):
+        return [pair for pair in attrs if
+                pair[0] == "class" and pair[1] == "content"]    
+
     def handle_starttag(self, tag, attrs):
-        if tag == "div" and [pair for pair in attrs if
-                pair[0] == "class" and pair[1] == "content"]:
-            print "yes"
-                
+        if tag == "div":
+            if self.class_content(tag, attrs):
+                self.content_nesting = 1
+            elif self.content_nesting:
+                self.content_nesting += 1
+        elif tag == "br" and self.content_nesting:
+            sys.stdout.write("\n")
+
     def handle_endtag(self, tag):
-        self.indiv = False
+        if tag == "div" and self.content_nesting:
+            self.content_nesting -= 1
             
     def handle_data(self, data):
-        pass
+        if self.content_nesting:
+            sys.stdout.write(data.strip())
     
     def __init__(self, outf):
         HTMLParser.__init__(self)
         self.outf = outf
+        self.content_nesting = 0
 
 def htmlFileToText(fname, outputDir, tag, attrib, attribVal):
     outfname = "{0}/{1}".format(outputDir, fname.replace(".html", ".txt"))
