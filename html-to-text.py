@@ -1,10 +1,27 @@
 import sys, glob, os
+from HTMLParser import HTMLParser
+
+class MyHTMLParser(HTMLParser):
+    def handle_starttag(self, tag, attrs):
+        print "Encountered a start tag:", tag        
+
+    def handle_endtag(self, tag):
+        print "Encountered an end tag :", tag
+
+    def handle_data(self, data):
+        print "Encountered some data  :", data
+        
+    def __init__(self, outf):
+        HTMLParser.__init__(self)
+        self.outf = outf
 
 def htmlFileToText(fname, outputDir, tag, attrib, attribVal):
-    outFname = "{0}/{1}".format(outputDir, fname.replace(".html", ".txt"))
-    with open(fname, "r") as inF, open(outFname, "w") as outF:
-        html = inF.read()
-        outF.write(html)
+    outfname = "{0}/{1}".format(outputDir, fname.replace(".html", ".txt"))
+    with open(fname, "r") as inf, open(outfname, "w") as outf:
+        html = inf.read()
+        parser = MyHTMLParser(outf)
+        parser.feed(html)
+        #outF.write(html)
 
 def htmlToText(dir, tag, attrib, attribVal):
     try:
@@ -22,6 +39,9 @@ def htmlToText(dir, tag, attrib, attribVal):
             htmlFileToText(fname, outputDir, tag, attrib, attribVal)
         except WindowsError as e:
             sys.exit(e)
+            
+        break
+
 
 def main():
     try:
