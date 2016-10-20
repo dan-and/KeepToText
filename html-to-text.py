@@ -1,5 +1,11 @@
 import sys, glob, os
 
+def htmlFileToText(fname, outputDir, tag, attrib, attribVal):
+    outFname = "{0}/{1}".format(outputDir, fname.replace(".html", ".txt"))
+    with open(fname, "r") as inF, open(outFname, "w") as outF:
+        html = inF.read()
+        outF.write(html)
+
 def htmlToText(dir, tag, attrib, attribVal):
     try:
         os.chdir(dir)
@@ -12,7 +18,10 @@ def htmlToText(dir, tag, attrib, attribVal):
         os.mkdir(outputDir)
     
     for fname in glob.glob("*.html"):
-        print fname
+        try:
+            htmlFileToText(fname, outputDir, tag, attrib, attribVal)
+        except WindowsError as e:
+            sys.exit(e)
 
 def main():
     try:
