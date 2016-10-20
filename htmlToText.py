@@ -1,4 +1,4 @@
-import sys, glob, os
+import sys, glob, os, shutil
 from HTMLParser import HTMLParser
 
 class MyHTMLParser(HTMLParser):
@@ -8,7 +8,7 @@ class MyHTMLParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag == self.tag:
-            if self.attrib_matches(tag, attrs):
+            if self.attrib_matches(tag, attrs) and not self.nesting:
                 self.nesting = 1
             elif self.nesting:
                 self.nesting += 1
@@ -39,28 +39,27 @@ def htmlFileToText(fname, outputDir, tag, attrib, attribVal):
         parser.feed(html)
 
 def htmlToText(dir, tag, attrib, attribVal):
-    try:
-        os.chdir(dir)
-    except WindowsError as e:
-        sys.exit(e)
-    
+    os.chdir(dir)
     outputDir = dir + "/Output"
     
-    if not os.path.isdir(outputDir):
+    if os.path.isdir(outputDir):
+        shutil.rmtree(outputDir)
+    else:
         os.mkdir(outputDir)
     
     for fname in glob.glob("*.html"):
-        try:
-            htmlFileToText(fname, outputDir, tag, attrib, attribVal)
-        except WindowsError as e:
-            sys.exit(e)
+        htmlFileToText(fname, outputDir, tag, attrib, attribVal)
 
 def main():
     try:
         cmd, dir, tag, attrib, attribVal = sys.argv
     except ValueError:
         sys.exit("Usage: {0} dir tag attrib attribVal".format(sys.argv[0]))
-    htmlToText(dir, tag, attrib, attribVal)
+    
+    try:
+        htmlToText(dir, tag, attrib, attribVal)
+    except WindowsError as e:
+        sys.exit(e)
 
 if __name__ == "__main__":
     main()
