@@ -13,7 +13,7 @@ class MyHTMLParser(HTMLParser):
             elif self.content_nesting:
                 self.content_nesting += 1
         elif tag == "br" and self.content_nesting:
-            sys.stdout.write("\n")
+            self.outf.write("\n")
 
     def handle_endtag(self, tag):
         if tag == "div" and self.content_nesting:
@@ -21,7 +21,7 @@ class MyHTMLParser(HTMLParser):
             
     def handle_data(self, data):
         if self.content_nesting:
-            sys.stdout.write(data.strip())
+            self.outf.write(data.strip())
     
     def __init__(self, outf):
         HTMLParser.__init__(self)
