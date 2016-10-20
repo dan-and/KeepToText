@@ -2,37 +2,40 @@ import sys, glob, os
 from HTMLParser import HTMLParser
 
 class MyHTMLParser(HTMLParser):
-    def class_content(self, tag, attrs):
+    def attrib_matches(self, tag, attrs):
         return [pair for pair in attrs if
-                pair[0] == "class" and pair[1] == "content"]    
+                pair[0] == self.attrib and pair[1] == self.attribVal]    
 
     def handle_starttag(self, tag, attrs):
-        if tag == "div":
-            if self.class_content(tag, attrs):
-                self.content_nesting = 1
-            elif self.content_nesting:
-                self.content_nesting += 1
-        elif tag == "br" and self.content_nesting:
+        if tag == self.tag:
+            if self.attrib_matches(tag, attrs):
+                self.nesting = 1
+            elif self.nesting:
+                self.nesting += 1
+        elif tag == "br" and self.nesting:
             self.outf.write("\n")
 
     def handle_endtag(self, tag):
-        if tag == "div" and self.content_nesting:
-            self.content_nesting -= 1
+        if tag == self.tag and self.nesting:
+            self.nesting -= 1
             
     def handle_data(self, data):
-        if self.content_nesting:
+        if self.nesting:
             self.outf.write(data.strip())
     
-    def __init__(self, outf):
+    def __init__(self, outf, tag, attrib, attribVal):
         HTMLParser.__init__(self)
         self.outf = outf
-        self.content_nesting = 0
+        self.tag = tag
+        self.attrib = attrib
+        self.attribVal = attribVal
+        self.nesting = 0
 
 def htmlFileToText(fname, outputDir, tag, attrib, attribVal):
     outfname = "{0}/{1}".format(outputDir, fname.replace(".html", ".txt"))
     with open(fname, "r") as inf, open(outfname, "w") as outf:
         html = inf.read()
-        parser = MyHTMLParser(outf)
+        parser = MyHTMLParser(outf, tag, attrib, attribVal)
         parser.feed(html)
 
 def htmlToText(dir, tag, attrib, attribVal):
