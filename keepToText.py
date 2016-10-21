@@ -64,8 +64,11 @@ def keepZipToText(zipFileName):
     outputDir=os.path.join(zipFileDir, "Text")
     rmtree(takeoutDir)
 
-    with ZipFile(zipFileName) as zipFile:
-        zipFile.extractall(zipFileDir)
+    try:
+        with ZipFile(zipFileName) as zipFile:
+            zipFile.extractall(zipFileDir)
+    except IOError as e:
+        sys.exit(e)
         
     htmlDir = os.path.join(takeoutDir, "Keep")
     htmlDirToText(inputDir=htmlDir, outputDir=outputDir,
