@@ -1,5 +1,6 @@
-import sys, glob, os, shutil
+import sys, glob, os, shutil, zipfile
 from HTMLParser import HTMLParser
+from zipfile import ZipFile
 
 class MyHTMLParser(HTMLParser):
     def attrib_matches(self, tag, attrs):
@@ -38,26 +39,37 @@ def htmlFileToText(fname, outputDir, tag, attrib, attribVal):
         parser = MyHTMLParser(outf, tag, attrib, attribVal)
         parser.feed(html)
 
-def htmlToText(dir, tag, attrib, attribVal):
-    os.chdir(dir)
-    outputDir = dir + "/Output"
-    
+def htmlDirToText(inputDir, outputDir, tag, attrib, attribVal):
     if os.path.isdir(outputDir):
         shutil.rmtree(outputDir)
     else:
         os.mkdir(outputDir)
     
-    for fname in glob.glob("*.html"):
+    for fname in glob.glob(os.path.join(inputDir, "*.html")):
         htmlFileToText(fname, outputDir, tag, attrib, attribVal)
+        
+def keepZipToText(zipFileName):
+    zipFileDir = os.path.dirname(zipFileName)
+    takeoutDir = os.path.join(zipFileDir, "Takeout")
+    
+    if os.path.isdir(takeoutDir):
+        shutil.rmtree(takeoutDir)
+
+    with ZipFile(zipFileName) as zipFile:
+        zipFile.extractall(zipFileDir)
+        
+    htmlDir = os.path.join(takeoutDir, "Keep")
+    htmlDirToText(inputDir=htmlDir, outputDir=os.path.join(zipFileDir, "Text"),
+        tag="div", attrib="class", attribVal="content")
 
 def main():
     try:
-        cmd, dir, tag, attrib, attribVal = sys.argv
+        cmd, zipFile = sys.argv
     except ValueError:
-        sys.exit("Usage: {0} dir tag attrib attribVal".format(sys.argv[0]))
+        sys.exit("Usage: {0} zipFile".format(sys.argv[0]))
     
     try:
-        htmlToText(dir, tag, attrib, attribVal)
+        keepZipToText(zipFile)
     except WindowsError as e:
         sys.exit(e)
 
