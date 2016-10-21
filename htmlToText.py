@@ -1,4 +1,4 @@
-import sys, glob, os, shutil, zipfile
+import sys, glob, os, shutil, zipfile, time
 from HTMLParser import HTMLParser
 from zipfile import ZipFile
 
@@ -41,19 +41,28 @@ def htmlFileToText(inputPath, outputDir, tag, attrib, attribVal):
         parser.feed(html)
 
 def htmlDirToText(inputDir, outputDir, tag, attrib, attribVal):
-    if os.path.isdir(outputDir):
-        shutil.rmtree(outputDir)
+    rmtree(outputDir)
     os.mkdir(outputDir)
     
     for path in glob.glob(os.path.join(inputDir, "*.html")):
         htmlFileToText(path, outputDir, tag, attrib, attribVal)
         
+def rmtree(dirname):
+    for i in range(3):
+        try:
+            if os.path.isdir(dirname):
+                shutil.rmtree(dirname)
+            return
+        except WindowsError as e:
+            error = e
+        time.sleep(0.5)
+    raise error
+        
 def keepZipToText(zipFileName):
     zipFileDir = os.path.dirname(zipFileName)
     takeoutDir = os.path.join(zipFileDir, "Takeout")
     outputDir=os.path.join(zipFileDir, "Text")
-    if os.path.isdir(takeoutDir):
-        shutil.rmtree(takeoutDir)
+    rmtree(takeoutDir)
 
     with ZipFile(zipFileName) as zipFile:
         zipFile.extractall(zipFileDir)
