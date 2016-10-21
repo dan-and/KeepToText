@@ -1,7 +1,7 @@
 # KeepToText
 
-Convert a Google Keep zip file to a directory of text files, suitable
-for import into systems such as Evernote
+Convert a Google Takeout zip file containing Google Keep notes to a
+directory of text files, suitable for import into systems such as Evernote
 
 Usage:
   python keepToText.py zipfile
