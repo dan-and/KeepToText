@@ -32,9 +32,10 @@ class MyHTMLParser(HTMLParser):
         self.attribVal = attribVal
         self.nesting = 0
 
-def htmlFileToText(fname, outputDir, tag, attrib, attribVal):
-    outfname = "{0}/{1}".format(outputDir, fname.replace(".html", ".txt"))
-    with open(fname, "r") as inf, open(outfname, "w") as outf:
+def htmlFileToText(inputPath, outputDir, tag, attrib, attribVal):
+    basename = os.path.basename(inputPath).replace(".html", ".txt")
+    outfname = os.path.join(outputDir, basename)
+    with open(inputPath, "r") as inf, open(outfname, "w") as outf:
         html = inf.read()
         parser = MyHTMLParser(outf, tag, attrib, attribVal)
         parser.feed(html)
@@ -42,16 +43,15 @@ def htmlFileToText(fname, outputDir, tag, attrib, attribVal):
 def htmlDirToText(inputDir, outputDir, tag, attrib, attribVal):
     if os.path.isdir(outputDir):
         shutil.rmtree(outputDir)
-    else:
-        os.mkdir(outputDir)
+    os.mkdir(outputDir)
     
-    for fname in glob.glob(os.path.join(inputDir, "*.html")):
-        htmlFileToText(fname, outputDir, tag, attrib, attribVal)
+    for path in glob.glob(os.path.join(inputDir, "*.html")):
+        htmlFileToText(path, outputDir, tag, attrib, attribVal)
         
 def keepZipToText(zipFileName):
     zipFileDir = os.path.dirname(zipFileName)
     takeoutDir = os.path.join(zipFileDir, "Takeout")
-    
+    outputDir=os.path.join(zipFileDir, "Text")
     if os.path.isdir(takeoutDir):
         shutil.rmtree(takeoutDir)
 
@@ -59,7 +59,7 @@ def keepZipToText(zipFileName):
         zipFile.extractall(zipFileDir)
         
     htmlDir = os.path.join(takeoutDir, "Keep")
-    htmlDirToText(inputDir=htmlDir, outputDir=os.path.join(zipFileDir, "Text"),
+    htmlDirToText(inputDir=htmlDir, outputDir=outputDir,
         tag="div", attrib="class", attribVal="content")
 
 def main():
