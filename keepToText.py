@@ -39,40 +39,49 @@ def htmlFileToText(inputPath, outputDir, tag, attrib, attribVal):
         html = inf.read()
         parser = MyHTMLParser(outf, tag, attrib, attribVal)
         parser.feed(html)
-
+        
 def htmlDirToText(inputDir, outputDir, tag, attrib, attribVal):
+    rmtree(outputDir, shouldMake=True)
     print "Building text files in {0} ...".format(outputDir)
     sys.stdout.flush()
-    rmtree(outputDir)
-    time.sleep(3)
-    os.mkdir(outputDir)
     
     for path in glob.glob(os.path.join(inputDir, "*.html")):
         htmlFileToText(path, outputDir, tag, attrib, attribVal)
         
     print "Done."
         
-def rmtree(dirname):
-    for i in range(3):
+def rmtree(dirname, shouldMake=False):
+    for i in range(10):
         try:
-            if os.path.isdir(dirname):
-                shutil.rmtree(dirname)
-            return
+            if not os.path.isdir(dirname):
+                if i > 0:
+                    time.sleep(2)
+                break
+            print "Removing {0}".format(dirname)
+            sys.stdout.flush()
+            shutil.rmtree(dirname)
         except WindowsError as e:
             error = e
         time.sleep(0.5)
-    raise error
+    else:
+        raise error
+        
+    if shouldMake:
+        os.mkdir(dirname)
+        time.sleep(2)
         
 def keepZipToText(zipFileName):
     zipFileDir = os.path.dirname(zipFileName)
     takeoutDir = os.path.join(zipFileDir, "Takeout")
     outputDir=os.path.join(zipFileDir, "Text")
     rmtree(takeoutDir)
+    
+    if os.path.isfile(zipFileName):
+        print "Extracting {0} ...".format(zipFileName)
+        sys.stdout.flush()
 
     try:
         with ZipFile(zipFileName) as zipFile:
-            print "Extracting {0} ...".format(zipFileName)
-            sys.stdout.flush()
             zipFile.extractall(zipFileDir)
     except IOError as e:
         sys.exit(e)
