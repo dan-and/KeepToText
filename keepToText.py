@@ -41,11 +41,16 @@ def htmlFileToText(inputPath, outputDir, tag, attrib, attribVal):
         parser.feed(html)
 
 def htmlDirToText(inputDir, outputDir, tag, attrib, attribVal):
+    print "Building text files in {0} ...".format(outputDir)
+    sys.stdout.flush()
     rmtree(outputDir)
+    time.sleep(3)
     os.mkdir(outputDir)
     
     for path in glob.glob(os.path.join(inputDir, "*.html")):
         htmlFileToText(path, outputDir, tag, attrib, attribVal)
+        
+    print "Done."
         
 def rmtree(dirname):
     for i in range(3):
@@ -66,6 +71,8 @@ def keepZipToText(zipFileName):
 
     try:
         with ZipFile(zipFileName) as zipFile:
+            print "Extracting {0} ...".format(zipFileName)
+            sys.stdout.flush()
             zipFile.extractall(zipFileDir)
     except IOError as e:
         sys.exit(e)
