@@ -63,7 +63,7 @@ def tryUntilDone(action, check):
         except Exception as e:
             ex = e
                 
-        if i == 20: break;
+        if i == 20: break
         
         try:
             action()
