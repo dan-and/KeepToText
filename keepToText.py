@@ -56,33 +56,38 @@ def htmlDirToText(inputDir, outputDir, tag, attrib, attribVal):
     
 def tryUntilDone(action, check):
     ex = None
-    for i in range(10):
-        if check != None:   
+    i = 1
+    while True:
+        if check != None:  
             try:
-                done = check()
+                checkOk = check()                
             except Exception as e:
                 ex = e
-                done = False
-                
-            if done:
+                checkOk = False
+                    
+            if checkOk:
                 return
-            
+        
+        if i == 20:
+            break;
+        
         try:
             action()
+            actOk = True
         except Exception as e:
             ex = e
-            continue
-            
-        if check == None:
+            actOk = False
+
+        if (actOk and check == None):
             return
             
-        time.sleep(0.5)
+        time.sleep(1)
+        i += 1
         
     if ex != None:
         raise ex
     else:
-        sys.exit("Failed")  
-        
+        sys.exit("Failed")          
         
 def try_rmtree(dir):
     if os.path.isdir(dir):
