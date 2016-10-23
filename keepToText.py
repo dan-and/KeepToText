@@ -58,56 +58,33 @@ def tryUntilDone(action, check):
     ex = None
     i = 1
     while True:
-        if check != None:  
-            try:
-                checkOk = check()                
-            except Exception as e:
-                ex = e
-                checkOk = False
-                    
-            if checkOk:
-                return
-        
-        if i == 20:
-            break;
+        try:
+            if check(): return
+        except Exception as e:
+            ex = e
+                
+        if i == 20: break;
         
         try:
             action()
-            actOk = True
         except Exception as e:
             ex = e
-            actOk = False
-
-        if (actOk and check == None):
-            return
             
         time.sleep(1)
         i += 1
         
-    if ex != None:
-        raise ex
-    else:
-        sys.exit("Failed")          
+    sys.exit(ex if ex != None else "Failed")          
         
 def try_rmtree(dir):
-    if os.path.isdir(dir):
-        msg("Removing {0}".format(dir))
+    if os.path.isdir(dir): msg("Removing {0}".format(dir))
 
-    def act():
-        shutil.rmtree(dir)
-        
-    def check():
-        return not os.path.isdir(dir)
-        
+    def act(): shutil.rmtree(dir)        
+    def check(): return not os.path.isdir(dir)        
     tryUntilDone(act, check)
         
 def try_mkdir(dir):
-    def act():
-        os.mkdir(dir)
-        
-    def check():
-        return os.path.isdir(dir)
-        
+    def act(): os.mkdir(dir)        
+    def check(): return os.path.isdir(dir)        
     tryUntilDone(act, check)
         
 def keepZipToText(zipFileName):
