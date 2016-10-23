@@ -45,38 +45,72 @@ def htmlFileToText(inputPath, outputDir, tag, attrib, attribVal):
         parser.feed(html)
         
 def htmlDirToText(inputDir, outputDir, tag, attrib, attribVal):
-    rmtree(outputDir, shouldMake=True)
+    try_rmtree(outputDir)
+    try_mkdir(outputDir)
     msg("Building text files in {0} ...".format(outputDir))
     
     for path in glob.glob(os.path.join(inputDir, "*.html")):
         htmlFileToText(path, outputDir, tag, attrib, attribVal)
         
     msg("Done.")
-        
-def rmtree(dirname, shouldMake=False):
+    
+def tryUntilDone(action, check):
+    ex = None
     for i in range(10):
+        if check != None:   
+            try:
+                done = check()
+            except Exception as e:
+                ex = e
+                done = False
+                
+            if done:
+                return
+            
         try:
-            if not os.path.isdir(dirname):
-                if i > 0:
-                    time.sleep(2)
-                break
-            msg("Removing {0}".format(dirname))
-            shutil.rmtree(dirname)
-        except WindowsError as e:
-            error = e
+            action()
+        except Exception as e:
+            ex = e
+            continue
+            
+        if check == None:
+            return
+            
         time.sleep(0.5)
-    else:
-        raise error
         
-    if shouldMake:
-        os.mkdir(dirname)
-        time.sleep(2)
+    if ex != None:
+        raise ex
+    else:
+        sys.exit("Failed")  
+        
+        
+def try_rmtree(dir):
+    if os.path.isdir(dir):
+        msg("Removing {0}".format(dir))
+
+    def act():
+        shutil.rmtree(dir)
+        
+    def check():
+        return not os.path.isdir(dir)
+        
+    tryUntilDone(act, check)
+        
+def try_mkdir(dir):
+    def act():
+        os.mkdir(dir)
+        
+    def check():
+        return os.path.isdir(dir)
+        
+    tryUntilDone(act, check)
         
 def keepZipToText(zipFileName):
     zipFileDir = os.path.dirname(zipFileName)
     takeoutDir = os.path.join(zipFileDir, "Takeout")
     outputDir=os.path.join(zipFileDir, "Text")
-    rmtree(takeoutDir)
+    
+    try_rmtree(takeoutDir)
     
     if os.path.isfile(zipFileName):
         msg("Extracting {0} ...".format(zipFileName))
