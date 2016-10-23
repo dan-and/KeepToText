@@ -31,6 +31,10 @@ class MyHTMLParser(HTMLParser):
         self.attrib = attrib
         self.attribVal = attribVal
         self.nesting = 0
+        
+def msg(s):
+    print >> sys.stderr, s
+    sys.stderr.flush()
 
 def htmlFileToText(inputPath, outputDir, tag, attrib, attribVal):
     basename = os.path.basename(inputPath).replace(".html", ".txt")
@@ -42,13 +46,12 @@ def htmlFileToText(inputPath, outputDir, tag, attrib, attribVal):
         
 def htmlDirToText(inputDir, outputDir, tag, attrib, attribVal):
     rmtree(outputDir, shouldMake=True)
-    print "Building text files in {0} ...".format(outputDir)
-    sys.stdout.flush()
+    msg("Building text files in {0} ...".format(outputDir))
     
     for path in glob.glob(os.path.join(inputDir, "*.html")):
         htmlFileToText(path, outputDir, tag, attrib, attribVal)
         
-    print "Done."
+    msg("Done.")
         
 def rmtree(dirname, shouldMake=False):
     for i in range(10):
@@ -57,8 +60,7 @@ def rmtree(dirname, shouldMake=False):
                 if i > 0:
                     time.sleep(2)
                 break
-            print "Removing {0}".format(dirname)
-            sys.stdout.flush()
+            msg("Removing {0}".format(dirname))
             shutil.rmtree(dirname)
         except WindowsError as e:
             error = e
@@ -77,8 +79,7 @@ def keepZipToText(zipFileName):
     rmtree(takeoutDir)
     
     if os.path.isfile(zipFileName):
-        print "Extracting {0} ...".format(zipFileName)
-        sys.stdout.flush()
+        msg("Extracting {0} ...".format(zipFileName))
 
     try:
         with ZipFile(zipFileName) as zipFile:
