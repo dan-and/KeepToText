@@ -102,8 +102,10 @@ def keepZipToText(zipFileName):
             zipFile.extractall(zipFileDir)
     except IOError as e:
         sys.exit(e)
-        
-    htmlDir = os.path.join(takeoutDir, "Keep")
+    translatedKeepDirs = ["Keep", "Notizen"]    
+    for dirName in translatedKeepDirs:
+	if os.path.isdir(takeoutDir+"/"+dirName): htmlDir = os.path.join(takeoutDir, dirName)
+
     htmlDirToText(inputDir=htmlDir, outputDir=outputDir,
         tag="div", attrib="class", attribVal="content")
 
