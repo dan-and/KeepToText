@@ -5,52 +5,61 @@ from zipfile import ZipFile
 class MyHTMLParser(HTMLParser):
     def attrib_matches(self, tag, attrs):
         return [pair for pair in attrs if
-                pair[0] == self.attrib and pair[1] == self.attribVal]    
+            pair[0] == "class" and pair[1] == "content"]
 
     def handle_starttag(self, tag, attrs):
-        if tag == self.tag:
+        if tag == "div":
             if self.attrib_matches(tag, attrs) and not self.nesting:
                 self.nesting = 1
             elif self.nesting:
                 self.nesting += 1
         elif tag == "br" and self.nesting:
             self.outf.write("\n")
+        elif tag == "img":
+            self.outf.write("\n\n")
+            self.outf.write("oneImage")
+        elif tag == "span" and attrs[0][1] == "label-name":
+            self.nesting = 1
+            self.wrap = 1
 
     def handle_endtag(self, tag):
-        if tag == self.tag and self.nesting:
+        if tag == "div" and self.nesting:
             self.nesting -= 1
-            
+
     def handle_data(self, data):
         if self.nesting:
-            self.outf.write(data.strip())
+            if self.wrap:
+                self.outf.write("\n\n")
+                self.outf.write("label({0})".format(data.strip()))
+                self.wrap = 0
+            else:
+                self.outf.write(data.strip())
     
-    def __init__(self, outf, tag, attrib, attribVal):
+    def __init__(self, outf):
         HTMLParser.__init__(self)
         self.outf = outf
-        self.tag = tag
-        self.attrib = attrib
-        self.attribVal = attribVal
         self.nesting = 0
-        
+        self.wrap = 0
+
 def msg(s):
     print >> sys.stderr, s
     sys.stderr.flush()
 
-def htmlFileToText(inputPath, outputDir, tag, attrib, attribVal):
+def htmlFileToText(inputPath, outputDir):
     basename = os.path.basename(inputPath).replace(".html", ".txt")
     outfname = os.path.join(outputDir, basename)
     with open(inputPath, "r") as inf, open(outfname, "w") as outf:
         html = inf.read()
-        parser = MyHTMLParser(outf, tag, attrib, attribVal)
+        parser = MyHTMLParser(outf)
         parser.feed(html)
         
-def htmlDirToText(inputDir, outputDir, tag, attrib, attribVal):
+def htmlDirToText(inputDir, outputDir):
     try_rmtree(outputDir)
     try_mkdir(outputDir)
     msg("Building text files in {0} ...".format(outputDir))
     
     for path in glob.glob(os.path.join(inputDir, "*.html")):
-        htmlFileToText(path, outputDir, tag, attrib, attribVal)
+        htmlFileToText(path, outputDir)
         
     msg("Done.")
     
@@ -106,8 +115,7 @@ def keepZipToText(zipFileName):
     for dirName in translatedKeepDirs:
 	if os.path.isdir(takeoutDir+"/"+dirName): htmlDir = os.path.join(takeoutDir, dirName)
 
-    htmlDirToText(inputDir=htmlDir, outputDir=outputDir,
-        tag="div", attrib="class", attribVal="content")
+    htmlDirToText(inputDir=htmlDir, outputDir=outputDir)
 
 def main():
     try:
